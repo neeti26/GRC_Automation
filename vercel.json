@@ -1,6 +1,14 @@
 {
-  "buildCommand": "cd grc-react && npm install && npm run build",
-  "outputDirectory": "grc-react/dist",
-  "installCommand": "cd grc-react && npm install",
-  "framework": "vite"
+  "version": 2,
+  "builds": [
+    {
+      "src": "grc-react/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 }
