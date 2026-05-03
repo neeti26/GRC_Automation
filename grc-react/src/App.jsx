@@ -119,11 +119,11 @@ export default function App() {
     <div style={{ display:"flex", height:"100vh", overflow:"hidden" }}>
       <Sidebar active={page} onNav={setPage} />
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        <div style={{ background:"rgba(255, 255, 255, 0.8)", backdropFilter:"blur(12px)", borderBottom:"1px solid var(--gray-200)", padding:"0 24px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, zIndex:10 }}>
+        <div style={{ background:"#ffffff", padding:"0 24px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, zIndex:10, boxShadow:"0 4px 20px rgba(0,0,0,0.03)" }}>
           <div onClick={() => setSearchOpen(true)}
-            style={{ display:"flex", alignItems:"center", gap:8, background:"#fff", border:"1px solid var(--gray-200)", boxShadow:"var(--shadow-sm)", borderRadius:8, padding:"8px 12px", width:300, color:"var(--gray-400)", fontSize:13, cursor:"text", transition:"all 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.borderColor="var(--gray-300)"}
-            onMouseLeave={e => e.currentTarget.style.borderColor="var(--gray-200)"}>
+            style={{ display:"flex", alignItems:"center", gap:10, background:"var(--gray-50)", border:"1px solid transparent", borderRadius:12, padding:"10px 14px", width:340, color:"var(--gray-500)", fontSize:13, cursor:"text", transition:"all 0.2s ease" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor="var(--gray-300)"; e.currentTarget.style.background="#ffffff"; e.currentTarget.style.boxShadow="0 2px 10px rgba(0,0,0,0.02)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor="transparent"; e.currentTarget.style.background="var(--gray-50)"; e.currentTarget.style.boxShadow="none"; }}>
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path strokeLinecap="round" d="m21 21-4.35-4.35"/></svg>
             Search pages, controls, evidence...
             <span style={{ fontSize:11, opacity:0.5, marginLeft:"auto" }}>Ctrl+K</span>

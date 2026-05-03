@@ -44,22 +44,22 @@ const icons = {
 
 export default function Sidebar({ active, onNav }) {
   return (
-    <nav style={{ width:220, background:"#fff", borderRight:"1px solid var(--gray-200)", display:"flex", flexDirection:"column", overflowY:"auto", flexShrink:0, height:"100vh" }}>
-      <div onClick={() => onNav("dashboard")} style={{ padding:"14px 16px", display:"flex", alignItems:"center", gap:8, borderBottom:"1px solid var(--gray-200)", cursor:"pointer" }}>
-        <div style={{ width:32, height:32, background:"var(--teal)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontWeight:700, fontSize:9, textAlign:"center", lineHeight:1.2 }}>GRC<br/>AUTO</div>
-        <span style={{ fontWeight:700, fontSize:13, color:"var(--gray-800)" }}>GRC Automation</span>
+    <nav style={{ width:240, background:"#0F172A", display:"flex", flexDirection:"column", overflowY:"auto", flexShrink:0, height:"100vh", boxShadow:"2px 0 10px rgba(0,0,0,0.1)", zIndex: 20 }}>
+      <div onClick={() => onNav("dashboard")} style={{ padding:"24px 20px", display:"flex", alignItems:"center", gap:12, borderBottom:"1px solid rgba(255,255,255,0.05)", cursor:"pointer" }}>
+        <div style={{ width:36, height:36, background:"linear-gradient(135deg, #14B8A6, #0F766E)", borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontWeight:800, fontSize:10, textAlign:"center", lineHeight:1.1, boxShadow:"0 4px 12px rgba(20,184,166,0.3)" }}>GRC<br/>AUTO</div>
+        <span style={{ fontWeight:700, fontSize:15, color:"#F8FAFC", letterSpacing:"-0.01em" }}>GRC Automation</span>
       </div>
-      <div style={{ flex:1, padding:"6px 0" }}>
+      <div style={{ flex:1, padding:"12px 0" }}>
         {navItems.map((item, i) => {
           if (item.section) return (
-            <div key={i} style={{ padding:"10px 16px 2px", fontSize:10, fontWeight:700, color:"var(--gray-400)", textTransform:"uppercase", letterSpacing:"0.06em" }}>{item.section}</div>
+            <div key={i} style={{ padding:"16px 20px 8px", fontSize:11, fontWeight:700, color:"#64748B", textTransform:"uppercase", letterSpacing:"0.08em" }}>{item.section}</div>
           );
           const isActive = active === item.id;
           return (
             <div key={item.id} onClick={() => onNav(item.id)}
-              style={{ display:"flex", alignItems:"center", gap:9, padding:"7px 16px", paddingLeft:item.sub?36:16, cursor:"pointer", fontSize:13, fontWeight:isActive?600:500, color:isActive?"var(--teal)":"var(--gray-600)", background:isActive?"var(--teal-light)":"transparent", borderRight:isActive?"3px solid var(--teal)":"3px solid transparent", transition:"all 0.15s ease", userSelect:"none", marginBottom:2 }}
-              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background="var(--gray-50)"; e.currentTarget.style.color="var(--gray-800)"; } }}
-              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color="var(--gray-600)"; } }}>
+              style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 16px", paddingLeft:item.sub?40:16, cursor:"pointer", fontSize:13, fontWeight:isActive?600:500, color:isActive?"#FFFFFF":"#94A3B8", background:isActive?"rgba(255,255,255,0.06)":"transparent", borderLeft:isActive?"3px solid #14B8A6":"3px solid transparent", transition:"all 0.2s ease", userSelect:"none", margin:"2px 12px", borderRadius: isActive ? "0 6px 6px 0" : "6px" }}
+              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background="rgba(255,255,255,0.03)"; e.currentTarget.style.color="#F1F5F9"; } }}
+              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color="#94A3B8"; } }}>
               {item.icon && <span style={{ opacity:isActive?1:0.7 }}>{icons[item.icon]}</span>}
               {item.label}
             </div>
