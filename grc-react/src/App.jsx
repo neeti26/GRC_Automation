@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Toast from "./components/Toast";
 import Modal from "./components/Modal";
@@ -59,6 +59,9 @@ const ALL_PAGES = [
 ];
 
 export default function App() {
+  console.log("App Rendering");
+  console.error("Rendering Error check - if you see this, JS is executing!");
+
   const [page, setPage] = useState("dashboard");
   const [toast, setToast] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -116,9 +119,11 @@ export default function App() {
     <div style={{ display:"flex", height:"100vh", overflow:"hidden" }}>
       <Sidebar active={page} onNav={setPage} />
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        <div style={{ background:"#fff", borderBottom:"1px solid var(--gray-200)", padding:"0 24px", height:52, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
+        <div style={{ background:"rgba(255, 255, 255, 0.8)", backdropFilter:"blur(12px)", borderBottom:"1px solid var(--gray-200)", padding:"0 24px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, zIndex:10 }}>
           <div onClick={() => setSearchOpen(true)}
-            style={{ display:"flex", alignItems:"center", gap:8, background:"var(--gray-100)", borderRadius:8, padding:"6px 12px", width:260, color:"var(--gray-400)", fontSize:13, cursor:"text" }}>
+            style={{ display:"flex", alignItems:"center", gap:8, background:"#fff", border:"1px solid var(--gray-200)", boxShadow:"var(--shadow-sm)", borderRadius:8, padding:"8px 12px", width:300, color:"var(--gray-400)", fontSize:13, cursor:"text", transition:"all 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.borderColor="var(--gray-300)"}
+            onMouseLeave={e => e.currentTarget.style.borderColor="var(--gray-200)"}>
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path strokeLinecap="round" d="m21 21-4.35-4.35"/></svg>
             Search pages, controls, evidence...
             <span style={{ fontSize:11, opacity:0.5, marginLeft:"auto" }}>Ctrl+K</span>

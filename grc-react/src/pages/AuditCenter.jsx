@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { auditItems as initialAudits } from "../data";
 import Card from "../components/Card";
 import StatusBadge from "../components/StatusBadge";
@@ -18,20 +18,56 @@ export default function AuditCenter({ showToast }) {
   }
   const statusMap = { scheduled:"in-progress", "in-progress":"in-progress", completed:"completed" };
   const th = { textAlign:"left", padding:"10px 12px", fontSize:12, fontWeight:600, color:"var(--gray-400)", borderBottom:"1px solid var(--gray-200)", background:"var(--gray-50)", whiteSpace:"nowrap" };
+  const [tab, setTab] = useState("Audits");
+  
   return (
     <div>
       <div style={{ fontSize:22, fontWeight:700, marginBottom:20, display:"flex", alignItems:"center", gap:10 }}>
-        Audit Center <span style={{ background:"var(--gray-200)", color:"var(--gray-600)", borderRadius:12, padding:"2px 8px", fontSize:12, fontWeight:600 }}>{items.length}</span>
-        <Btn variant="primary" style={{ marginLeft:"auto" }} onClick={() => setAddOpen(true)}>+ Schedule Audit</Btn>
+        Audit Center
+        <Btn variant="primary" style={{ marginLeft:"auto" }} onClick={() => setAddOpen(true)}>Add Audit ▾</Btn>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:16 }}>
-        {[["Scheduled",items.filter(a=>a.status==="scheduled").length,"var(--yellow)"],["In Progress",items.filter(a=>a.status==="in-progress").length,"var(--teal)"],["Completed",items.filter(a=>a.status==="completed").length,"var(--green)"]].map(([label,val,color]) => (
-          <div key={label} style={{ background:"#fff", border:"1px solid var(--gray-200)", borderRadius:10, padding:"14px 16px" }}>
-            <div style={{ fontSize:11, fontWeight:600, color:"var(--gray-400)", marginBottom:4 }}>{label}</div>
-            <div style={{ fontSize:26, fontWeight:700, color }}>{val}</div>
+
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--gray-200)', marginBottom: 24, gap: 4 }}>
+        {['Audits', 'Requests', 'Findings', 'Corrective Actions'].map(t => (
+          <div key={t} onClick={() => setTab(t)} 
+            style={{ 
+              padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+              color: tab === t ? '#fff' : 'var(--gray-600)', 
+              background: tab === t ? '#314158' : 'transparent', 
+              borderRadius: tab === t ? '8px 8px 0 0' : 8,
+            }}>
+            {t}
+            {t === 'Audits' && <span style={{ background: tab === t ? 'rgba(255,255,255,0.2)' : 'var(--gray-200)', color: tab === t ? '#fff' : 'var(--gray-600)', borderRadius: 12, padding: '2px 6px', fontSize: 11 }}>{items.length}</span>}
           </div>
         ))}
       </div>
+
+      {tab === "Audits" && (
+        <>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, marginBottom:20 }}>
+            {[
+              { label:"Upcoming", val:items.filter(a=>a.status==="scheduled").length, color:"var(--gray-800)" },
+              { label:"In Progress", val:items.filter(a=>a.status==="in-progress").length, color:"#fb923c" },
+              { label:"Completed", val:items.filter(a=>a.status==="completed").length, color:"#34d399" }
+            ].map(s => (
+              <div key={s.label} style={{ background:"#fff", border:"1px solid var(--gray-200)", borderRadius:12, padding:"16px 20px" }}>
+                <div style={{ fontSize:12, fontWeight:600, color:s.color, marginBottom:12, display:"flex", alignItems:"center", gap:6 }}>
+                  <span style={{ display:'inline-block', width:8, height:8, borderRadius:'50%', background:s.color }}/> {s.label} <span style={{ marginLeft:'auto', color:'var(--gray-400)' }}>ⓘ</span>
+                </div>
+                <div style={{ fontSize:32, fontWeight:700, color:"var(--gray-800)", textAlign:'center' }}>{s.val}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", gap: 8, marginBottom: 20, justifyContent: "flex-end" }}>
+            {["Audit Type", "Entities", "More Filters"].map(filter => (
+              <select key={filter} style={{ padding: "6px 12px", border: "1px solid var(--gray-200)", borderRadius: 8, fontSize: 13, background: "#fff", cursor: "pointer", outline: "none" }}>
+                <option>{filter} ▾</option>
+              </select>
+            ))}
+            <button style={{ background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 8, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>⚙️</button>
+          </div>
+
       <Card noPad>
         <div style={{ overflowX:"auto" }}>
           <table style={{ width:"100%", borderCollapse:"collapse" }}>
@@ -57,6 +93,8 @@ export default function AuditCenter({ showToast }) {
           </table>
         </div>
       </Card>
+      </>
+      )}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Schedule Audit"
         footer={<><Btn onClick={() => setAddOpen(false)}>Cancel</Btn><Btn variant="primary" onClick={handleAdd}>Schedule</Btn></>}>
         <form onSubmit={handleAdd}>

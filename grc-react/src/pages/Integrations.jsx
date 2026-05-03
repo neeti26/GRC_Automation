@@ -1,127 +1,126 @@
 import { useState } from 'react';
-import Btn from '../components/Btn';
-import Modal from '../components/Modal';
 
-const categories = ['Cloud Providers', 'Identity Providers', 'Project Management Platforms', 'Policy Management', 'Campaigns & Trainings'];
+const categories = [
+  'Cloud Providers', 'Identity Providers', 'Version Control', 
+  'Project Management Platforms', 'Human Resource Information Systems', 
+  'Background Check', 'Mobile Device Management Tools'
+];
 
 const integrations = {
   'Cloud Providers': [
-    { name: 'AWS', icon: '☁️', desc: 'Cloud Provider · Asset Discovery', connected: true },
-    { name: 'Azure', icon: '🔷', desc: 'Cloud Provider · Asset Discovery', connected: false },
-    { name: 'GCP', icon: '🌐', desc: 'Cloud Provider · Asset Discovery', connected: false },
-  ],
-  'Identity Providers': [
-    { name: 'Okta', icon: '🔑', desc: 'Identity Provider · SSO', connected: false },
-    { name: 'Azure AD', icon: '🔷', desc: 'Identity Provider · SSO', connected: false },
-  ],
-  'Project Management Platforms': [
-    { name: 'Jira', icon: '📋', desc: 'Project Management · Issue Tracking', connected: false },
-    { name: 'Linear', icon: '📐', desc: 'Project Management · Issue Tracking', connected: false },
-  ],
-  'Policy Management': [
-    { name: 'Confluence', icon: '✖️', desc: 'Policy Management', connected: false },
-  ],
-  'Campaigns & Trainings': [
-    { name: 'KnowBe4', icon: '🎯', desc: 'Automated Tests · Employee Training Campaigns', connected: false },
+    { name: 'Amazon Web Services', icon: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg', automates: ['Automated Tests', 'Scrut Monitor', 'User Access Data', 'Asset Management', 'Vulnerability Management'], action: 'Configure' },
+    { name: 'Microsoft Azure', icon: 'https://upload.wikimedia.org/wikipedia/commons/a/a8/Microsoft_Azure_Logo.svg', automates: ['Automated Tests', 'Scrut Monitor', 'Asset Management'], action: 'Integrate' },
+    { name: 'Google Cloud', icon: 'https://upload.wikimedia.org/wikipedia/commons/5/51/Google_Cloud_logo.svg', automates: ['Automated Tests', 'Scrut Monitor', 'Asset Management'], action: 'Integrate' },
+    { name: 'Digital Ocean', icon: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/DigitalOcean_logo.svg', automates: ['Automated Tests', 'Scrut Monitor', 'Asset Management'], action: 'Integrate' },
+    { name: 'Heroku', icon: 'https://upload.wikimedia.org/wikipedia/commons/e/e3/Heroku_logo.svg', automates: ['Automated Tests', 'Asset Management', 'Scrut Monitor'], action: 'Integrate' },
+    { name: 'Vercel', icon: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Vercel_logo_black.svg', automates: ['Automated Tests', 'User Access Data', 'Scrut Monitor'], action: 'Integrate' },
   ],
 };
 
 export default function Integrations({ showToast }) {
   const [activeCategory, setActiveCategory] = useState('Cloud Providers');
-  const [configItem, setConfigItem] = useState(null);
-  const [connected, setConnected] = useState({ AWS: true });
-  const [tab, setTab] = useState('Connected Integrations');
+  const [tab, setTab] = useState('Integrations Library');
 
   const items = integrations[activeCategory] || [];
 
-  function handleConnect(name) {
-    setConnected(prev => ({ ...prev, [name]: true }));
-    setConfigItem(null);
-    showToast(`${name} connected successfully`);
-  }
-
-  const allConnected = Object.values(integrations).flat().filter(i => connected[i.name]);
-
   return (
-    <div>
-      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 20 }}>Integrations</div>
+    <div style={{ background: 'var(--gray-50)', minHeight: '100%', padding: '0 20px', borderRadius: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 0 16px' }}>
+        <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--gray-800)' }}>Integrations</div>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 8, padding: '6px 12px', width: 220 }}>
+            <span style={{ color: 'var(--gray-400)', marginRight: 8 }}>🔍</span>
+            <input placeholder="Search by name" style={{ border: 'none', outline: 'none', fontSize: 13, width: '100%' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 8, padding: '6px 12px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
+            Integrations For <span style={{ background: 'var(--gray-200)', borderRadius: '50%', width: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginLeft: 8, fontSize: 11 }}>1</span> <span style={{ marginLeft: 6 }}>▾</span>
+          </div>
+          <button style={{ background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 8, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            🔄
+          </button>
+        </div>
+      </div>
 
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--gray-200)', marginBottom: 20 }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--gray-200)', marginBottom: 24 }}>
         {['Connected Integrations', 'Integrations Library'].map(t => (
-          <div key={t} onClick={() => setTab(t)} style={{ padding: '8px 18px', fontSize: 13, fontWeight: 500, cursor: 'pointer', color: tab === t ? 'var(--gray-800)' : 'var(--gray-400)', borderBottom: tab === t ? '2px solid var(--gray-800)' : '2px solid transparent', marginBottom: -1 }}>{t}</div>
+          <div key={t} onClick={() => setTab(t)} 
+            style={{ 
+              padding: '10px 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer', 
+              color: tab === t ? '#fff' : 'var(--gray-600)', 
+              background: tab === t ? '#314158' : 'transparent', 
+              borderRadius: tab === t ? '8px 8px 0 0' : 0,
+              borderBottom: tab === t ? 'none' : '2px solid transparent'
+            }}>
+            {t}
+          </div>
         ))}
       </div>
 
-      {tab === 'Connected Integrations' && (
-        allConnected.length === 0
-          ? <div style={{ textAlign: 'center', padding: '60px 24px', color: 'var(--gray-400)' }}>
-              <div style={{ fontSize: 44, marginBottom: 10 }}>🔌</div>
-              <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--gray-600)', marginBottom: 5 }}>No integrations connected</h3>
-              <p style={{ fontSize: 13 }}>Go to Integrations Library to connect your tools.</p>
-            </div>
-          : <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {allConnected.map(i => (
-                <div key={i.name} style={{ background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 12, padding: 18, display: 'flex', alignItems: 'center', gap: 14, maxWidth: 420 }}>
-                  <div style={{ width: 42, height: 42, borderRadius: 8, background: 'var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{i.icon}</div>
-                  <div><h4 style={{ fontSize: 14, fontWeight: 600 }}>{i.name}</h4><p style={{ fontSize: 12, color: 'var(--gray-400)', marginTop: 2 }}>{i.desc}</p></div>
-                  <div style={{ marginLeft: 'auto' }}>
-                    <span style={{ background: '#dcfce7', color: '#16a34a', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>Connected</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-      )}
-
       {tab === 'Integrations Library' && (
-        <div style={{ display: 'flex', gap: 16 }}>
-          <div style={{ width: 200, flexShrink: 0, background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 12, padding: 8, height: 'fit-content' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--gray-400)', padding: '8px 12px 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Categories</div>
+        <div style={{ display: 'flex', gap: 32 }}>
+          <div style={{ width: 240, flexShrink: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gray-500)', padding: '0 12px 10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Categories</div>
             {categories.map(c => (
               <div key={c} onClick={() => setActiveCategory(c)}
-                style={{ padding: '7px 12px', borderRadius: 7, fontSize: 12, cursor: 'pointer', color: activeCategory === c ? '#fff' : 'var(--gray-600)', background: activeCategory === c ? 'var(--gray-800)' : 'transparent' }}
-                onMouseEnter={e => { if (activeCategory !== c) e.currentTarget.style.background = 'var(--gray-100)'; }}
+                style={{ 
+                  padding: '10px 14px', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontWeight: 500,
+                  color: activeCategory === c ? '#fff' : 'var(--gray-700)', 
+                  background: activeCategory === c ? '#314158' : 'transparent',
+                  marginBottom: 4
+                }}
+                onMouseEnter={e => { if (activeCategory !== c) e.currentTarget.style.background = 'var(--gray-200)'; }}
                 onMouseLeave={e => { if (activeCategory !== c) e.currentTarget.style.background = 'transparent'; }}>
                 {c}
               </div>
             ))}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4 }}>{activeCategory}</div>
-            <div style={{ fontSize: 13, color: 'var(--gray-400)', marginBottom: 16 }}>Connect your {activeCategory.toLowerCase()} tools to automate data collection.</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ fontWeight: 600, fontSize: 18, color: 'var(--gray-800)', marginBottom: 6 }}>{activeCategory}</div>
+            <div style={{ fontSize: 13, color: 'var(--gray-500)', marginBottom: 24 }}>Integrate with your cloud instances to automatically scan for security misconfigurations and vulnerabilities.</div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
               {items.map(i => (
-                <div key={i.name} style={{ background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 12, padding: 18, display: 'flex', alignItems: 'center', gap: 14, maxWidth: 420 }}>
-                  <div style={{ width: 42, height: 42, borderRadius: 8, background: 'var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{i.icon}</div>
-                  <div><h4 style={{ fontSize: 14, fontWeight: 600 }}>{i.name}</h4><p style={{ fontSize: 12, color: 'var(--gray-400)', marginTop: 2 }}>{i.desc}</p></div>
-                  <div style={{ marginLeft: 'auto' }}>
-                    {connected[i.name]
-                      ? <span style={{ background: '#dcfce7', color: '#16a34a', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>Connected</span>
-                      : <Btn onClick={() => setConfigItem(i)}>Configure</Btn>}
+                <div key={i.name} style={{ background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    {i.icon.startsWith('http') ? <img src={i.icon} alt={i.name} style={{ width: 28, height: 28, objectFit: 'contain' }} /> : <div style={{ fontSize: 24 }}>{i.icon}</div>}
+                    <h4 style={{ fontSize: 15, fontWeight: 600, color: 'var(--gray-800)', margin: 0 }}>{i.name}</h4>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {i.automates.map(auto => (
+                      <span key={auto} style={{ background: 'var(--gray-100)', color: 'var(--gray-600)', padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 500 }}>
+                        {auto}
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 'auto', paddingTop: 16 }}>
+                    {i.action === 'Configure' ? (
+                      <button onClick={() => showToast('Configuration opened')} style={{ background: '#fff', border: '1px solid var(--gray-300)', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, color: 'var(--gray-700)', cursor: 'pointer' }}>
+                        Configure
+                      </button>
+                    ) : (
+                      <button onClick={() => showToast('Integration started')} style={{ background: '#6366f1', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer' }}>
+                        Integrate
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
+            
+            {items.length === 0 && (
+              <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-400)', background: '#fff', borderRadius: 12, border: '1px dashed var(--gray-300)' }}>
+                No integrations available for this category yet.
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      <Modal open={!!configItem} onClose={() => setConfigItem(null)} title={`Configure ${configItem?.name}`}
-        footer={<><Btn onClick={() => setConfigItem(null)}>Cancel</Btn><Btn variant="teal" onClick={() => handleConnect(configItem?.name)}>Connect</Btn></>}>
-        {configItem && (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, padding: 16, background: 'var(--gray-50)', borderRadius: 10 }}>
-              <div style={{ width: 42, height: 42, borderRadius: 8, background: 'var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{configItem.icon}</div>
-              <div><div style={{ fontWeight: 600 }}>{configItem.name}</div><div style={{ fontSize: 12, color: 'var(--gray-400)' }}>{configItem.desc}</div></div>
-            </div>
-            {[['API Key', 'password'], ['Workspace URL', 'text']].map(([label, type]) => (
-              <div key={label} style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--gray-600)', marginBottom: 6 }}>{label}</label>
-                <input type={type} placeholder={label} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: 8, fontSize: 13, outline: 'none' }} />
-              </div>
-            ))}
-          </div>
-        )}
-      </Modal>
+      {tab === 'Connected Integrations' && (
+        <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-400)' }}>
+          No integrations connected.
+        </div>
+      )}
     </div>
   );
 }

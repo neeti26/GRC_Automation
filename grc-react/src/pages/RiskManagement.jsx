@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { risks as initialRisks } from "../data";
 import Card from "../components/Card";
 import StatusBadge from "../components/StatusBadge";
@@ -33,36 +33,147 @@ export default function RiskManagement({ showToast }) {
   const th = { textAlign:"left", padding:"10px 12px", fontSize:12, fontWeight:600, color:"var(--gray-400)", borderBottom:"1px solid var(--gray-200)", background:"var(--gray-50)", whiteSpace:"nowrap" };
   const matrix = [[1,2,3,4,5],[2,4,6,8,10],[3,6,9,12,15],[4,8,12,16,20],[5,10,15,20,25]];
   const cellColor = v => v>=16?"#fecaca":v>=9?"#fee2e2":v>=4?"#fef3c7":"#dcfce7";
+  const [tab, setTab] = useState("Dashboard");
+  
   return (
     <div>
       <div style={{ fontSize:22, fontWeight:700, marginBottom:20, display:"flex", alignItems:"center", gap:10 }}>
-        Risk Management <span style={{ background:"var(--gray-200)", color:"var(--gray-600)", borderRadius:12, padding:"2px 8px", fontSize:12, fontWeight:600 }}>{items.length}</span>
-        <Btn variant="primary" style={{ marginLeft:"auto" }} onClick={() => setAddOpen(true)}>+ Add Risk</Btn>
+        Risk Management
+        <div style={{ marginLeft:"auto", display:"flex", gap:12 }}>
+          <Btn variant="primary" onClick={() => setAddOpen(true)}>Add Risk ▾</Btn>
+          <Btn>Export Risk Report</Btn>
+          <button style={{ background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 8, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>⚙️</button>
+        </div>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
-        <Card>
-          <div style={{ fontSize:13, fontWeight:600, color:"var(--gray-600)", marginBottom:14 }}>Risk Heat Map</div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:3 }}>
-            {matrix.map((row,ri) => row.map((v,ci) => (
-              <div key={ri+"-"+ci} style={{ height:40, borderRadius:4, background:cellColor(v), display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:600, color:"#374151" }}>{v}</div>
-            )))}
+      
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--gray-200)', marginBottom: 24, gap: 4 }}>
+        {['Dashboard', 'Risk Register', 'Mitigation Task', 'Risk Discovery'].map(t => (
+          <div key={t} onClick={() => setTab(t)} 
+            style={{ 
+              padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', 
+              color: tab === t ? '#fff' : 'var(--gray-600)', 
+              background: tab === t ? '#314158' : 'transparent', 
+              borderRadius: tab === t ? '8px 8px 0 0' : 8,
+            }}>
+            {t}
           </div>
-          <div style={{ display:"flex", gap:12, marginTop:10, fontSize:11 }}>
-            {[["#fecaca","Critical"],["#fee2e2","High"],["#fef3c7","Medium"],["#dcfce7","Low"]].map(([bg,label]) => (
-              <span key={label}><span style={{ display:"inline-block", width:10, height:10, background:bg, borderRadius:2, marginRight:4 }} />{label}</span>
+        ))}
+      </div>
+
+      {tab === "Dashboard" && (
+        <>
+          <div style={{ display: "flex", gap: 8, marginBottom: 20, justifyContent: "flex-end" }}>
+            {["Assignee", "Department", "Category", "Entities"].map(filter => (
+              <select key={filter} style={{ padding: "6px 12px", border: "1px solid var(--gray-200)", borderRadius: 8, fontSize: 13, background: "#fff", cursor: "pointer", outline: "none" }}>
+                <option>{filter} ▾</option>
+              </select>
             ))}
           </div>
-        </Card>
-        <Card>
-          <div style={{ fontSize:13, fontWeight:600, color:"var(--gray-600)", marginBottom:14 }}>Risk Summary</div>
-          {[["Critical",items.filter(r=>r.inherent==="Critical").length,"#991b1b"],["High",items.filter(r=>r.inherent==="High").length,"#dc2626"],["Medium",items.filter(r=>r.inherent==="Medium").length,"#d97706"],["Low",items.filter(r=>r.inherent==="Low").length,"#16a34a"]].map(([label,count,color]) => (
-            <div key={label} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid var(--gray-100)" }}>
-              <span style={{ fontSize:13 }}>{label}</span>
-              <span style={{ fontWeight:700, color, fontSize:18 }}>{count}</span>
-            </div>
-          ))}
-        </Card>
-      </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12, marginBottom: 24 }}>
+            {[
+              { label: "Open", val: 0, color: "#9ca3af" },
+              { label: "Assessed", val: 0, color: "#60a5fa" },
+              { label: "Treatment in Progress", val: 0, color: "#fb923c" },
+              { label: "Monitor", val: 0, color: "#fca5a5" },
+              { label: "Treated", val: 0, color: "#34d399" },
+              { label: "Closed", val: 0, color: "#f87171" }
+            ].map(s => (
+              <div key={s.label} style={{ background: "#fff", border: "1px solid var(--gray-200)", borderRadius: 12, padding: "16px 20px" }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: s.color, marginBottom: 12, display: "flex", justifyContent: "space-between" }}>
+                  {s.label} <span>ⓘ</span>
+                </div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: "var(--gray-800)" }}>{s.val}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+            <Card>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--gray-800)" }}>Risk Heat Map</div>
+                <select style={{ padding: "4px 10px", border: "1px solid var(--gray-200)", borderRadius: 6, fontSize: 12, background: "#fff" }}>
+                  <option>Treatment Strategy ▾</option>
+                </select>
+              </div>
+              
+              <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+                <select style={{ flex: 1, padding: "8px 12px", border: "1px solid var(--gray-200)", borderRadius: 8, fontSize: 12, background: "var(--gray-50)", color: "var(--gray-600)", fontWeight: 600 }}>
+                  <option>Risk Score: Inherent Risk ▾</option>
+                </select>
+                <select style={{ flex: 1, padding: "8px 12px", border: "1px solid var(--gray-200)", borderRadius: 8, fontSize: 12, background: "var(--gray-50)", color: "var(--gray-600)", fontWeight: 600 }}>
+                  <option>X-Axis: Likelihood ▾</option>
+                </select>
+                <select style={{ flex: 1, padding: "8px 12px", border: "1px solid var(--gray-200)", borderRadius: 8, fontSize: 12, background: "var(--gray-50)", color: "var(--gray-600)", fontWeight: 600 }}>
+                  <option>Y-Axis: Impact ▾</option>
+                </select>
+              </div>
+
+              <div style={{ position: "relative", paddingLeft: 40, paddingBottom: 30 }}>
+                <div style={{ position: "absolute", left: 0, top: "40%", transform: "rotate(-90deg)", transformOrigin: "0 0", fontSize: 11, fontWeight: 600, color: "var(--gray-400)" }}>Impact</div>
+                <div style={{ position: "absolute", bottom: 0, left: "45%", fontSize: 11, fontWeight: 600, color: "var(--gray-400)" }}>Likelihood</div>
+                
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ fontSize: 11, color: "var(--gray-500)", width: 40, textAlign: "right", paddingRight: 8 }}>High</span>
+                    <div style={{ flex: 1, height: 48, background: "#9ca3af", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>0</div>
+                    <div style={{ flex: 1, height: 48, background: "#9ca3af", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>0</div>
+                    <div style={{ flex: 1, height: 48, background: "#9ca3af", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>0</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ fontSize: 11, color: "var(--gray-500)", width: 40, textAlign: "right", paddingRight: 8 }}>Medium</span>
+                    <div style={{ flex: 1, height: 48, background: "#9ca3af", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>0</div>
+                    <div style={{ flex: 1, height: 48, background: "#9ca3af", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>0</div>
+                    <div style={{ flex: 1, height: 48, background: "#9ca3af", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>0</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ fontSize: 11, color: "var(--gray-500)", width: 40, textAlign: "right", paddingRight: 8 }}>Low</span>
+                    <div style={{ flex: 1, height: 48, background: "#9ca3af", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>0</div>
+                    <div style={{ flex: 1, height: 48, background: "#9ca3af", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>0</div>
+                    <div style={{ flex: 1, height: 48, background: "#9ca3af", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>0</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", marginLeft: 48, marginTop: 8, paddingRight: 8 }}>
+                  <div style={{ flex: 1, textAlign: "center", fontSize: 11, color: "var(--gray-500)" }}>Low</div>
+                  <div style={{ flex: 1, textAlign: "center", fontSize: 11, color: "var(--gray-500)" }}>Medium<br/>Likelihood</div>
+                  <div style={{ flex: 1, textAlign: "center", fontSize: 11, color: "var(--gray-500)" }}>High</div>
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--gray-800)" }}>Risk Trend</div>
+                <select style={{ padding: "4px 10px", border: "1px solid var(--gray-200)", borderRadius: 6, fontSize: 12, background: "#fff" }}>
+                  <option>Last 7 Days ▾</option>
+                </select>
+              </div>
+              <div style={{ fontSize: 11, color: "var(--gray-400)", textAlign: "center", marginBottom: 20 }}>Click and drag in the plot area to zoom in</div>
+              
+              <div style={{ position: "relative", height: 200, display: "flex", alignItems: "flex-end", paddingBottom: 24, paddingLeft: 40 }}>
+                <div style={{ position: "absolute", left: 0, top: "40%", transform: "rotate(-90deg)", transformOrigin: "0 0", fontSize: 11, color: "var(--gray-500)" }}>Number of Risks</div>
+                <div style={{ position: "absolute", bottom: 40, left: 40, right: 0, height: 1, background: "var(--gray-200)" }} />
+                
+                <div style={{ position: "absolute", bottom: 40, left: 40, right: 0, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  {[...Array(7)].map((_,i) => (
+                    <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", position: "relative", zIndex: 2 }} />
+                  ))}
+                  <div style={{ position: "absolute", top: 4, left: 0, right: 0, height: 2, background: "#10b981", zIndex: 1 }} />
+                </div>
+
+                <div style={{ position: "absolute", bottom: 0, left: 40, right: 0, display: "flex", justifyContent: "space-between" }}>
+                  {["Apr 25", "Apr 26", "Apr 27", "Apr 28", "Apr 29", "Apr 30", "May 1"].map(d => (
+                    <div key={d} style={{ fontSize: 10, color: "var(--gray-500)" }}>{d}</div>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          </div>
+        </>
+      )}
+
+      {tab === "Risk Register" && (
+        <>
       <div style={{ display:"flex", gap:8, marginBottom:14, flexWrap:"wrap" }}>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search risks..."
           style={{ flex:1, minWidth:180, padding:"7px 12px", border:"1px solid var(--gray-200)", borderRadius:8, fontSize:13, outline:"none" }} />
@@ -140,6 +251,8 @@ export default function RiskManagement({ showToast }) {
           ))}
         </div>}
       </Modal>
+        </>
+      )}
     </div>
   );
 }

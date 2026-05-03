@@ -1,97 +1,139 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import Btn from "../components/Btn";
-import StatusBadge from "../components/StatusBadge";
-import Modal from "../components/Modal";
-
-const SERVICES = [
-  { name:"IAM", ok:28, issues:12, region:"global" },
-  { name:"EC2", ok:25, issues:10, region:"ap-southeast-1" },
-  { name:"S3", ok:8, issues:4, region:"ap-southeast-1" },
-  { name:"RDS", ok:5, issues:3, region:"ap-southeast-1" },
-  { name:"CloudTrail", ok:3, issues:2, region:"us-east-1" },
-  { name:"Lambda", ok:6, issues:1, region:"ap-southeast-1" },
-  { name:"VPC", ok:4, issues:0, region:"ap-southeast-1" },
-  { name:"KMS", ok:2, issues:1, region:"ap-southeast-1" },
-];
+import Card from "../components/Card";
 
 export default function CloudPage({ showToast }) {
-  const [detail, setDetail] = useState(null);
-  const totalOk = SERVICES.reduce((s,i) => s+i.ok, 0);
-  const totalIssues = SERVICES.reduce((s,i) => s+i.issues, 0);
+  const [tab, setTab] = useState("Dashboard");
+  const [provider, setProvider] = useState("AWS");
 
   return (
     <div>
-      <div style={{ fontSize:22, fontWeight:700, marginBottom:20, display:"flex", alignItems:"center", gap:10 }}>
-        Cloud Security
-        <StatusBadge status="compliant" style={{ marginLeft:8 }}>AWS Connected</StatusBadge>
-        <Btn style={{ marginLeft:"auto" }} onClick={() => showToast("Refreshing cloud data...")}>Refresh</Btn>
+      <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 24, display: "flex", alignItems: "center", gap: 10, color: "var(--gray-800)" }}>
+        Cloud Tests
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-        {[["Total Resources",totalOk+totalIssues,"var(--teal)"],["Compliant",totalOk,"var(--green)"],["Needs Attention",totalIssues,"var(--red)"],["Services Scanned",SERVICES.length,"var(--purple)"]].map(([label,val,color]) => (
-          <div key={label} style={{ background:"#fff", border:"1px solid var(--gray-200)", borderRadius:10, padding:"14px 16px" }}>
-            <div style={{ fontSize:11, fontWeight:600, color:"var(--gray-400)", marginBottom:4 }}>{label}</div>
-            <div style={{ fontSize:26, fontWeight:700, color }}>{val}</div>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--gray-200)', marginBottom: 24, gap: 4 }}>
+        {['Dashboard', 'Tests', 'Resources', 'Audit Log'].map(t => (
+          <div key={t} onClick={() => setTab(t)} 
+            style={{ 
+              padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+              color: tab === t ? '#fff' : 'var(--gray-600)', 
+              background: tab === t ? '#314158' : 'transparent', 
+              borderRadius: tab === t ? '8px 8px 0 0' : 8,
+            }}>
+            {t}
           </div>
         ))}
       </div>
 
-      <div style={{ background:"#fff", border:"1px solid var(--gray-200)", borderRadius:12, overflow:"hidden" }}>
-        <div style={{ padding:"16px 20px", borderBottom:"1px solid var(--gray-200)", fontWeight:600, fontSize:14 }}>Cloud Security Posture — AWS Account 304789072698</div>
-        <table style={{ width:"100%", borderCollapse:"collapse" }}>
-          <thead>
-            <tr>
-              {["Service","Region","Compliant","Issues","Score","Status","Actions"].map(h => (
-                <th key={h} style={{ textAlign:"left", padding:"10px 16px", fontSize:12, fontWeight:600, color:"var(--gray-400)", borderBottom:"1px solid var(--gray-200)", background:"var(--gray-50)", whiteSpace:"nowrap" }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {SERVICES.map(s => {
-              const score = Math.round((s.ok/(s.ok+s.issues))*100);
-              return (
-                <tr key={s.name} style={{ cursor:"pointer" }} onClick={() => setDetail(s)}
-                  onMouseEnter={e => e.currentTarget.querySelectorAll("td").forEach(td => td.style.background="var(--gray-50)")}
-                  onMouseLeave={e => e.currentTarget.querySelectorAll("td").forEach(td => td.style.background="")}>
-                  <td style={{ padding:"12px 16px", borderBottom:"1px solid var(--gray-100)", fontWeight:600 }}>{s.name}</td>
-                  <td style={{ padding:"12px 16px", borderBottom:"1px solid var(--gray-100)", fontSize:12, color:"var(--gray-400)" }}>{s.region}</td>
-                  <td style={{ padding:"12px 16px", borderBottom:"1px solid var(--gray-100)", color:"var(--green)", fontWeight:600 }}>{s.ok}</td>
-                  <td style={{ padding:"12px 16px", borderBottom:"1px solid var(--gray-100)", color:s.issues>0?"var(--red)":"var(--green)", fontWeight:600 }}>{s.issues}</td>
-                  <td style={{ padding:"12px 16px", borderBottom:"1px solid var(--gray-100)" }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <div style={{ flex:1, height:6, background:"var(--gray-200)", borderRadius:3, overflow:"hidden" }}>
-                        <div style={{ height:"100%", width:score+"%", background:score>=80?"var(--green)":score>=60?"var(--yellow)":"var(--red)", borderRadius:3 }} />
-                      </div>
-                      <span style={{ fontSize:12, fontWeight:600, minWidth:32 }}>{score}%</span>
-                    </div>
-                  </td>
-                  <td style={{ padding:"12px 16px", borderBottom:"1px solid var(--gray-100)" }}>
-                    <StatusBadge status={s.issues===0?"compliant":s.issues<=3?"in-progress":"needs-attention"}>{s.issues===0?"OK":s.issues<=3?"Warning":"Issues"}</StatusBadge>
-                  </td>
-                  <td style={{ padding:"12px 16px", borderBottom:"1px solid var(--gray-100)" }} onClick={e => e.stopPropagation()}>
-                    <Btn small onClick={() => showToast("Scanning " + s.name + "...")}>Scan</Btn>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      {tab === "Dashboard" && (
+        <>
+          <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+            {['AWS', 'Azure', 'GCP'].map(p => (
+              <button key={p} onClick={() => setProvider(p)} style={{ 
+                background: provider === p ? 'var(--gray-100)' : '#fff', 
+                border: '1px solid var(--gray-200)', 
+                borderRadius: 8, width: 42, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                fontSize: 18
+              }}>
+                {p === 'AWS' ? '☁️' : p === 'Azure' ? '🔷' : '🌐'}
+              </button>
+            ))}
+            <select style={{ padding: "8px 16px", border: "1px solid var(--gray-200)", borderRadius: 8, fontSize: 13, background: "#fff", color: "var(--gray-800)", fontWeight: 600, cursor: "pointer", outline: "none", marginLeft: 8 }}>
+              <option>Account ID</option>
+            </select>
+            <button style={{ background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 8, width: 42, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              🔄
+            </button>
+          </div>
 
-      <Modal open={!!detail} onClose={() => setDetail(null)} title={detail ? "AWS " + detail.name + " Details" : ""} footer={<><Btn variant="teal" onClick={() => { showToast("Scanning " + detail?.name); setDetail(null); }}>Run Scan</Btn><Btn onClick={() => setDetail(null)}>Close</Btn></>}>
-        {detail && <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12 }}>
-            {[["Compliant",detail.ok,"var(--green)"],["Issues",detail.issues,"var(--red)"],["Score",Math.round((detail.ok/(detail.ok+detail.issues))*100)+"%","var(--teal)"]].map(([k,v,c]) => (
-              <div key={k} style={{ textAlign:"center", padding:14, background:"var(--gray-50)", borderRadius:10 }}>
-                <div style={{ fontSize:24, fontWeight:700, color:c }}>{v}</div>
-                <div style={{ fontSize:12, color:"var(--gray-400)", marginTop:4 }}>{k}</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
+            {[
+              { label: "Total Tests Performed", val: 110 },
+              { label: "Non-Compliant Tests", val: 41 },
+              { label: "Total Resources Scanned", val: 30394 },
+              { label: "Non-Compliant Resources", val: 1070 }
+            ].map(s => (
+              <div key={s.label} style={{ background: "#fff", border: "1px solid var(--gray-200)", borderRadius: 12, padding: "20px 24px" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--gray-800)", marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
+                  {s.label} <span style={{ color: "var(--gray-400)", fontWeight: 400 }}>ⓘ</span>
+                </div>
+                <div style={{ fontSize: 36, fontWeight: 700, color: "var(--gray-800)" }}>{s.val}</div>
               </div>
             ))}
           </div>
-          <div><div style={{ fontSize:11, fontWeight:600, color:"var(--gray-400)", marginBottom:2 }}>Region</div><div style={{ fontSize:14 }}>{detail.region}</div></div>
-          <div><div style={{ fontSize:11, fontWeight:600, color:"var(--gray-400)", marginBottom:2 }}>AWS Account</div><div style={{ fontSize:14 }}>304789072698</div></div>
-        </div>}
-      </Modal>
+
+          <Card style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 15, fontWeight: 600, color: "var(--gray-800)", marginBottom: 16 }}>Resources Summary</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--teal)", marginBottom: 32 }}>Cloud Providers / AWS</div>
+            
+            <div style={{ position: "relative", height: 260, display: "flex", alignItems: "flex-end", paddingBottom: 24, paddingLeft: 60 }}>
+              <div style={{ position: "absolute", left: -30, top: "40%", transform: "rotate(-90deg)", transformOrigin: "0 0", fontSize: 11, color: "var(--gray-500)", fontWeight: 600 }}>Needs Attention Count</div>
+              <div style={{ position: "absolute", bottom: 24, left: 60, right: 0, height: 1, background: "var(--gray-200)" }} />
+              
+              <div style={{ position: "absolute", left: 0, bottom: 24, top: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "flex-end", paddingRight: 8, fontSize: 11, color: "var(--gray-500)" }}>
+                <span>700</span><span>600</span><span>500</span><span>400</span><span>300</span><span>200</span><span>100</span><span>0</span>
+              </div>
+              
+              <div style={{ position: "absolute", bottom: 24, left: 60, right: 0, display: "flex", justifyContent: "space-around", alignItems: "flex-end", height: "100%" }}>
+                {[
+                  { name: "AWS IAM", val: 580 },
+                  { name: "S3", val: 340 },
+                  { name: "EC2", val: 180 },
+                  { name: "Virtual Private Clou...", val: 40 },
+                  { name: "ELBv2", val: 20 },
+                  { name: "CloudTrail", val: 10 },
+                  { name: "RDS", val: 15 },
+                  { name: "KMS", val: 5 }
+                ].map(bar => (
+                  <div key={bar.name} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "10%" }}>
+                    <div style={{ width: "100%", background: "#f97316", height: `${(bar.val/700)*100}%`, borderRadius: "4px 4px 0 0", border: "1px solid #c2410c" }} />
+                    <div style={{ position: "absolute", bottom: -20, fontSize: 10, color: "var(--gray-500)", textAlign: "center", whiteSpace: "nowrap" }}>{bar.name}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--gray-800)" }}>Resources Flagged</div>
+              <select style={{ padding: "6px 12px", border: "1px solid var(--gray-200)", borderRadius: 6, fontSize: 12, background: "#fff" }}>
+                <option>Last 30 Days ▾</option>
+              </select>
+            </div>
+            <div style={{ fontSize: 11, color: "var(--gray-400)", textAlign: "center", marginBottom: 20 }}>Click and drag in the plot area to zoom in</div>
+            
+            <div style={{ position: "relative", height: 260, display: "flex", alignItems: "flex-end", paddingBottom: 30, paddingLeft: 60 }}>
+              <div style={{ position: "absolute", left: -40, top: "40%", transform: "rotate(-90deg)", transformOrigin: "0 0", fontSize: 11, color: "var(--gray-500)", fontWeight: 600 }}>Number of Flagged Resources</div>
+              <div style={{ position: "absolute", bottom: 30, left: 60, right: 0, height: 1, background: "var(--gray-200)" }} />
+              
+              <div style={{ position: "absolute", left: 0, bottom: 30, top: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "flex-end", paddingRight: 8, fontSize: 11, color: "var(--gray-500)" }}>
+                <span>1250</span><span>1000</span><span>750</span><span>500</span><span>250</span><span>0</span>
+              </div>
+              
+              <div style={{ position: "absolute", bottom: 30, left: 60, right: 0, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                {[...Array(11)].map((_,i) => (
+                  <div key={i} style={{ width: 4, height: 4, borderRadius: "50%", background: "#c2410c", position: "relative", zIndex: 2 }} />
+                ))}
+                <div style={{ position: "absolute", top: 1, left: 0, right: 0, height: 2, background: "#c2410c", zIndex: 1, transform: "rotate(-2deg)", transformOrigin: "left" }} />
+              </div>
+
+              <div style={{ position: "absolute", bottom: 0, left: 60, right: 0, display: "flex", justifyContent: "space-between" }}>
+                {["Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20"].map(d => (
+                  <div key={d} style={{ fontSize: 10, color: "var(--gray-500)" }}>{d}</div>
+                ))}
+              </div>
+            </div>
+          </Card>
+        </>
+      )}
+
+      {tab !== "Dashboard" && (
+        <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-400)' }}>
+          Select the Dashboard tab to view Cloud Tests overview.
+        </div>
+      )}
     </div>
   );
 }

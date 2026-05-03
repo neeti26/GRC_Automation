@@ -1,4 +1,4 @@
-﻿const navItems = [
+const navItems = [
   { id:"tasks",        label:"Task Center",       icon:"task" },
   { id:"dashboard",    label:"Dashboard",          icon:"home" },
   { id:"tests",        label:"Tests",              icon:"check" },
@@ -57,10 +57,10 @@ export default function Sidebar({ active, onNav }) {
           const isActive = active === item.id;
           return (
             <div key={item.id} onClick={() => onNav(item.id)}
-              style={{ display:"flex", alignItems:"center", gap:9, padding:"7px 16px", paddingLeft:item.sub?36:16, cursor:"pointer", fontSize:13, color:isActive?"#fff":"var(--gray-600)", background:isActive?"var(--gray-800)":"transparent", transition:"background 0.12s", userSelect:"none" }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background="var(--gray-100)"; }}
-              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background="transparent"; }}>
-              {item.icon && icons[item.icon]}
+              style={{ display:"flex", alignItems:"center", gap:9, padding:"7px 16px", paddingLeft:item.sub?36:16, cursor:"pointer", fontSize:13, fontWeight:isActive?600:500, color:isActive?"var(--teal)":"var(--gray-600)", background:isActive?"var(--teal-light)":"transparent", borderRight:isActive?"3px solid var(--teal)":"3px solid transparent", transition:"all 0.15s ease", userSelect:"none", marginBottom:2 }}
+              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background="var(--gray-50)"; e.currentTarget.style.color="var(--gray-800)"; } }}
+              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color="var(--gray-600)"; } }}>
+              {item.icon && <span style={{ opacity:isActive?1:0.7 }}>{icons[item.icon]}</span>}
               {item.label}
             </div>
           );

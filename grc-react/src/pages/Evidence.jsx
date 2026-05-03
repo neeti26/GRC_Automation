@@ -1,223 +1,160 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { evidences as initialEvidences } from '../data';
-import { Chart, BarElement, BarController, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
-import Card from '../components/Card';
-import Tabs from '../components/Tabs';
-import StatusBadge from '../components/StatusBadge';
-import Btn from '../components/Btn';
-import Pagination from '../components/Pagination';
-import Modal from '../components/Modal';
-import ProgressBar from '../components/ProgressBar';
-
-Chart.register(BarElement, BarController, CategoryScale, LinearScale, Tooltip, Legend);
-
-function EvidenceByAssigneeChart({ evidences }) {
-  const ref = useRef(null);
-  const chartRef = useRef(null);
-  useEffect(() => {
-    if (chartRef.current) chartRef.current.destroy();
-    const noAssignee = evidences.filter(e => !e.assignee);
-    const balaji = evidences.filter(e => e.assignee === 'Balaji');
-    chartRef.current = new Chart(ref.current, {
-      type: 'bar',
-      data: {
-        labels: ['No Assignee', 'Balaji'],
-        datasets: [
-          { label: 'Not Uploaded', data: [noAssignee.filter(e=>e.status==='not-uploaded').length, balaji.filter(e=>e.status==='not-uploaded').length], backgroundColor: '#9ca3af' },
-          { label: 'Draft',        data: [0, 0], backgroundColor: '#f59e0b' },
-          { label: 'Needs Attention', data: [noAssignee.filter(e=>e.status==='needs-attention').length, 0], backgroundColor: '#ef4444' },
-          { label: 'Uploaded',     data: [0, balaji.filter(e=>e.status==='uploaded').length], backgroundColor: '#22c55e' },
-        ],
-      },
-      options: {
-        plugins: { legend: { position: 'bottom' } },
-        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
-        responsive: true, maintainAspectRatio: false,
-      },
-    });
-    return () => chartRef.current?.destroy();
-  }, [evidences]);
-  return <canvas ref={ref} />;
-}
+import { useState } from "react";
+import Btn from "../components/Btn";
+import Card from "../components/Card";
 
 export default function Evidence({ showToast }) {
-  const [tab, setTab] = useState('All Evidences');
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
-  const [evidences, setEvidences] = useState(initialEvidences);
-  const [addOpen, setAddOpen] = useState(false);
-  const [detailItem, setDetailItem] = useState(null);
-  const [form, setForm] = useState({ name: '', assignee: '', estimate: '' });
-  const PER_PAGE = 10;
-
-  const filtered = useMemo(() =>
-    evidences.filter(e => e.name.toLowerCase().includes(search.toLowerCase())),
-    [evidences, search]);
-
-  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-  const uploaded = evidences.filter(e => e.status === 'uploaded').length;
-
-  function handleAdd(e) {
-    e.preventDefault();
-    setEvidences(prev => [...prev, { ...form, id: Date.now(), status: 'not-uploaded', gaps: 'Not Evaluated' }]);
-    setAddOpen(false);
-    setForm({ name: '', assignee: '', estimate: '' });
-    showToast('Evidence task added');
-  }
-
-  const thStyle = { textAlign: 'left', padding: '10px 12px', fontSize: 12, fontWeight: 600, color: 'var(--gray-400)', borderBottom: '1px solid var(--gray-200)', whiteSpace: 'nowrap', background: 'var(--gray-50)' };
+  const [tab, setTab] = useState("Dashboard");
 
   return (
     <div>
-      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        Evidence Tasks <span style={{ background: 'var(--gray-200)', color: 'var(--gray-600)', borderRadius: 12, padding: '2px 8px', fontSize: 12, fontWeight: 600 }}>{evidences.length}</span>
-        <Btn variant="primary" style={{ marginLeft: 'auto' }} onClick={() => setAddOpen(true)}>Add Evidence</Btn>
-        <Btn onClick={() => showToast('Settings opened')}>⚙</Btn>
+      <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 24, display: "flex", alignItems: "center", gap: 10, color: "var(--gray-800)" }}>
+        Evidence Tasks <span style={{ background: "var(--gray-200)", color: "var(--gray-600)", borderRadius: 6, padding: "2px 6px", fontSize: 13, fontWeight: 600 }}>141</span>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 12 }}>
+          <Btn variant="primary" onClick={() => showToast("Add Evidence clicked")}>Add Evidence</Btn>
+          <button style={{ background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 8, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>⚙️</button>
+        </div>
       </div>
 
-      <Tabs tabs={['Dashboard', 'All Evidences']} active={tab} onChange={t => { setTab(t); setPage(1); }} />
-
-      {tab === 'All Evidences' && (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-            <Card>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-600)', marginBottom: 14 }}>Evidence Status</div>
-              <div style={{ fontSize: 26, fontWeight: 700 }}>{uploaded}/{evidences.length} <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--gray-400)' }}>Evidence Uploaded</span></div>
-              <ProgressBar value={(uploaded / evidences.length) * 100} color="var(--green)" />
-              <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 11, flexWrap: 'wrap' }}>
-                <span style={{ color: 'var(--green)' }}>● Uploaded: {uploaded}</span>
-                <span style={{ color: 'var(--yellow)' }}>● Draft: 0</span>
-                <span style={{ color: 'var(--red)' }}>● Needs Attention: 1</span>
-                <span style={{ color: 'var(--gray-400)' }}>● Not Uploaded: {evidences.length - uploaded}</span>
-              </div>
-            </Card>
-            <Card>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-600)', marginBottom: 14 }}>Evidence Gaps</div>
-              <div style={{ fontSize: 26, fontWeight: 700 }}>0/{evidences.length} <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--gray-400)' }}>Evidence items have gaps</span></div>
-              <ProgressBar value={100} color="var(--yellow)" />
-              <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 11, flexWrap: 'wrap' }}>
-                <span style={{ color: 'var(--green)' }}>● No Gaps: 0</span>
-                <span style={{ color: 'var(--red)' }}>● Gaps Detected: 0</span>
-                <span style={{ color: 'var(--gray-400)' }}>● Not Evaluated: {evidences.length}</span>
-              </div>
-            </Card>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-            <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Search by evidence name or assignee"
-              style={{ flex: 1, minWidth: 180, padding: '7px 12px', border: '1px solid var(--gray-200)', borderRadius: 8, fontSize: 13, outline: 'none' }} />
-            <select style={{ padding: '7px 12px', border: '1px solid var(--gray-200)', borderRadius: 8, fontSize: 12, background: '#fff', cursor: 'pointer' }}>
-              <option>Assignee</option><option>Balaji</option><option>Unassigned</option>
-            </select>
-            <select style={{ padding: '7px 12px', border: '1px solid var(--gray-200)', borderRadius: 8, fontSize: 12, background: '#fff', cursor: 'pointer' }}>
-              <option>Department</option>
-            </select>
-            <select style={{ padding: '7px 12px', border: '1px solid var(--gray-200)', borderRadius: 8, fontSize: 12, background: '#fff', cursor: 'pointer' }}>
-              <option>Framework</option><option>ISO 27001:2022</option><option>SOC 2</option><option>MAS TRM 2021</option>
-            </select>
-            <select style={{ padding: '7px 12px', border: '1px solid var(--gray-200)', borderRadius: 8, fontSize: 12, background: '#fff', cursor: 'pointer' }}>
-              <option>Entities</option>
-            </select>
-            <select style={{ padding: '7px 12px', border: '1px solid var(--gray-200)', borderRadius: 8, fontSize: 12, background: '#fff', cursor: 'pointer' }}>
-              <option>Relevance 1</option>
-            </select>
-            <Btn onClick={() => showToast('More filters')}>More Filters</Btn>
-            <Btn onClick={() => showToast('Columns customized')}>Columns 4 ▾</Btn>
-            <Btn onClick={() => showToast('Exported to CSV')}>Export</Btn>
-          </div>
-
-          <Card noPad>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={{ ...thStyle, width: 32 }}><input type="checkbox" /></th>
-                    <th style={thStyle}>Evidence Name ↕</th>
-                    <th style={thStyle}>Status ↕</th>
-                    <th style={thStyle}>Client Estimate ↕</th>
-                    <th style={thStyle}>Assignee ↕</th>
-                    <th style={thStyle}>Gaps Found ↕</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginated.map(e => (
-                    <tr key={e.id} style={{ cursor: 'pointer' }} onClick={() => setDetailItem(e)}
-                      onMouseEnter={ev => ev.currentTarget.querySelectorAll('td').forEach(td => td.style.background = 'var(--gray-50)')}
-                      onMouseLeave={ev => ev.currentTarget.querySelectorAll('td').forEach(td => td.style.background = '')}>
-                      <td style={{ padding: '10px 12px', borderBottom: '1px solid var(--gray-100)' }} onClick={ev => ev.stopPropagation()}><input type="checkbox" /></td>
-                      <td style={{ padding: '10px 12px', fontSize: 13, borderBottom: '1px solid var(--gray-100)', color: 'var(--teal)', fontWeight: 500 }}>{e.name}</td>
-                      <td style={{ padding: '10px 12px', borderBottom: '1px solid var(--gray-100)' }}><StatusBadge status={e.status} /></td>
-                      <td style={{ padding: '10px 12px', fontSize: 12, borderBottom: '1px solid var(--gray-100)', color: e.estimate ? 'var(--red)' : 'var(--gray-400)' }}>{e.estimate ? `+ ${e.estimate}` : '—'}</td>
-                      <td style={{ padding: '10px 12px', fontSize: 13, borderBottom: '1px solid var(--gray-100)' }}>{e.assignee || '—'}</td>
-                      <td style={{ padding: '10px 12px', fontSize: 12, borderBottom: '1px solid var(--gray-100)', color: 'var(--gray-400)' }}>{e.gaps}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--gray-200)', marginBottom: 24, justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {['Dashboard', 'All Evidences'].map(t => (
+            <div key={t} onClick={() => setTab(t)} 
+              style={{ 
+                padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+                color: tab === t ? '#fff' : 'var(--gray-600)', 
+                background: tab === t ? '#314158' : 'transparent', 
+                borderRadius: tab === t ? '8px 8px 0 0' : 8,
+              }}>
+              {t}
             </div>
-            <Pagination page={page} total={filtered.length} perPage={PER_PAGE} onChange={setPage} />
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 8, paddingBottom: 8 }}>
+          {["Assignee", "Department", "Framework", "Entities"].map(filter => (
+            <select key={filter} style={{ padding: "6px 12px", border: "1px solid var(--gray-200)", borderRadius: 8, fontSize: 13, background: "#fff", cursor: "pointer", outline: "none", color: "var(--gray-600)" }}>
+              <option>{filter} ▾</option>
+            </select>
+          ))}
+          <select style={{ padding: "6px 12px", border: "1px solid var(--gray-200)", borderRadius: 8, fontSize: 13, background: "var(--gray-50)", cursor: "pointer", outline: "none", color: "var(--gray-600)" }}>
+            <option>Relevance 1 ▾</option>
+          </select>
+          <button style={{ background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 8, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>🔄</button>
+        </div>
+      </div>
+
+      {tab === "Dashboard" && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+            <Card>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--gray-600)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                Evidence Status ⓘ
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: 24, fontWeight: 700, color: "var(--gray-800)" }}>10/141</span>
+                <span style={{ fontSize: 11, color: "var(--gray-500)", fontWeight: 600 }}>Evidence Uploaded</span>
+              </div>
+              <div style={{ height: 8, background: "var(--gray-200)", borderRadius: 4, overflow: "hidden", marginBottom: 16, display: "flex" }}>
+                <div style={{ height: "100%", width: "7%", background: "#10b981" }} />
+                <div style={{ height: "100%", width: "1%", background: "#ef4444" }} />
+                <div style={{ height: "100%", width: "92%", background: "var(--gray-200)" }} />
+              </div>
+              <div style={{ display: "flex", gap: 12, fontSize: 10, color: "var(--gray-500)" }}>
+                <span><span style={{ display:"inline-block", width:6, height:6, borderRadius:"50%", background:"#10b981", marginRight:4 }}/>Uploaded - 10</span>
+                <span><span style={{ display:"inline-block", width:6, height:6, borderRadius:"50%", background:"#f59e0b", marginRight:4 }}/>Draft - 0</span>
+                <span><span style={{ display:"inline-block", width:6, height:6, borderRadius:"50%", background:"#ef4444", marginRight:4 }}/>Needs Attention - 1</span>
+                <span><span style={{ display:"inline-block", width:6, height:6, borderRadius:"50%", background:"var(--gray-400)", marginRight:4 }}/>Not Uploaded - 130</span>
+              </div>
+            </Card>
+
+            <Card>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--gray-600)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                Evidence Gaps ⓘ
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: 24, fontWeight: 700, color: "var(--gray-800)" }}>0/141</span>
+                <span style={{ fontSize: 11, color: "var(--gray-500)", fontWeight: 600 }}>Evidence items have gaps</span>
+              </div>
+              <div style={{ height: 8, background: "var(--gray-200)", borderRadius: 4, overflow: "hidden", marginBottom: 16 }}>
+                <div style={{ height: "100%", width: "100%", background: "#f59e0b", borderRadius: 4 }} />
+              </div>
+              <div style={{ display: "flex", gap: 12, fontSize: 10, color: "var(--gray-500)" }}>
+                <span><span style={{ display:"inline-block", width:6, height:6, borderRadius:"50%", background:"#10b981", marginRight:4 }}/>No Gaps - 0</span>
+                <span><span style={{ display:"inline-block", width:6, height:6, borderRadius:"50%", background:"#ef4444", marginRight:4 }}/>Gaps Detected - 0</span>
+                <span><span style={{ display:"inline-block", width:6, height:6, borderRadius:"50%", background:"#f59e0b", marginRight:4 }}/>Not Evaluated - 141</span>
+              </div>
+            </Card>
+
+            <Card style={{ padding: "24px 20px" }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--gray-800)", marginBottom: 16 }}>Upcoming Evidence for Review ⓘ</div>
+              <div style={{ borderBottom: "1px solid var(--gray-100)", paddingBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--gray-800)" }}>Security Notifications and Alerts</span>
+                  <span style={{ fontSize: 11, color: "#ef4444", background: "#fee2e2", padding: "2px 6px", borderRadius: 4, fontWeight: 600 }}>Overdue by 30 days</span>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--gray-500)" }}>IT</div>
+              </div>
+            </Card>
+
+            <Card style={{ textAlign: "center", padding: "40px 20px" }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--gray-800)", textAlign: "left", marginBottom: 16 }}>AI-Detected Evidence Gaps ⓘ</div>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>☕</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--gray-800)", marginBottom: 4 }}>You're all caught up!</div>
+              <div style={{ fontSize: 12, color: "var(--gray-500)" }}>No gaps detected in your evidences</div>
+            </Card>
+          </div>
+
+          <Card>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--gray-800)" }}>Evidences by Assignee</div>
+              <select style={{ padding: "4px 10px", border: "1px solid var(--gray-200)", borderRadius: 6, fontSize: 12, background: "#fff" }}>
+                <option>Assignee ▾</option>
+              </select>
+            </div>
+            
+            <div style={{ position: "relative", height: 260, display: "flex", alignItems: "flex-end", paddingBottom: 40, paddingLeft: 40 }}>
+              <div style={{ position: "absolute", left: -30, top: "40%", transform: "rotate(-90deg)", transformOrigin: "0 0", fontSize: 11, color: "var(--gray-500)", fontWeight: 600 }}>Number of Evidences</div>
+              <div style={{ position: "absolute", bottom: 40, left: 40, right: 0, height: 1, background: "var(--gray-200)" }} />
+              
+              <div style={{ position: "absolute", left: 0, bottom: 40, top: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "flex-end", paddingRight: 8, fontSize: 11, color: "var(--gray-500)" }}>
+                <span>150</span><span>125</span><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
+              </div>
+              
+              <div style={{ position: "absolute", bottom: 40, left: 40, right: 0, display: "flex", justifyContent: "space-around", alignItems: "flex-end", height: "100%" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "40%", height: "100%", justifyContent: "flex-end" }}>
+                  <div style={{ width: "100%", height: "2%", background: "#ef4444" }} />
+                  <div style={{ width: "100%", height: "3%", background: "#f59e0b" }} />
+                  <div style={{ width: "100%", height: "5%", background: "#10b981" }} />
+                  <div style={{ width: "100%", height: "85%", background: "#9ca3af", borderRadius: "4px 4px 0 0" }} />
+                  <div style={{ position: "absolute", bottom: -20, fontSize: 10, color: "var(--gray-500)", textAlign: "center", whiteSpace: "nowrap" }}>No Assignee</div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "40%", height: "100%", justifyContent: "flex-end" }}>
+                  <div style={{ width: "100%", height: "1%", background: "#10b981", borderRadius: "4px 4px 0 0" }} />
+                  <div style={{ position: "absolute", bottom: -20, fontSize: 10, color: "var(--gray-500)", textAlign: "center", whiteSpace: "nowrap" }}>Balaji</div>
+                </div>
+              </div>
+            </div>
+            
+            <div style={{ display: "flex", justifyContent: "flex-start", gap: 16, marginTop: 20 }}>
+              {[
+                { label: "Not Uploaded", color: "#9ca3af" },
+                { label: "Draft", color: "#f59e0b" },
+                { label: "Needs Attention", color: "#ef4444" },
+                { label: "Uploaded", color: "#10b981" }
+              ].map(leg => (
+                <div key={leg.label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--gray-600)", fontWeight: 600 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: leg.color }} /> {leg.label}
+                </div>
+              ))}
+            </div>
           </Card>
         </>
       )}
 
-      {tab === 'Dashboard' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <Card>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-600)', marginBottom: 14 }}>Upcoming Evidence for Review</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: 'var(--gray-50)', borderRadius: 8, gap: 12 }}>
-                <div>
-                  <div style={{ fontWeight: 500, fontSize: 13 }}>Security Notifications and Alerts</div>
-                  <div style={{ fontSize: 12, color: 'var(--gray-400)' }}>IT</div>
-                </div>
-                <StatusBadge status="needs-attention">Overdue by 19 days</StatusBadge>
-              </div>
-            </Card>
-            <Card>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-600)', marginBottom: 14 }}>AI-Detected Evidence Gaps</div>
-              <div style={{ textAlign: 'center', padding: '40px 24px', color: 'var(--gray-400)' }}>
-                <div style={{ fontSize: 44, marginBottom: 10 }}>☕</div>
-                <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--gray-600)', marginBottom: 5 }}>You're all caught up!</h3>
-                <p style={{ fontSize: 13 }}>No gaps detected in your evidences</p>
-              </div>
-            </Card>
-          </div>
-          <Card>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-600)', marginBottom: 14, display: 'flex', alignItems: 'center' }}>
-              Evidences by Assignee
-              <select style={{ marginLeft: 'auto', padding: '4px 8px', border: '1px solid var(--gray-200)', borderRadius: 6, fontSize: 12, background: '#fff', cursor: 'pointer' }}>
-                <option>Assignee</option>
-              </select>
-            </div>
-            <div style={{ height: 200 }}><EvidenceByAssigneeChart evidences={evidences} /></div>
-          </Card>
+      {tab !== "Dashboard" && (
+        <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-400)' }}>
+          Select the Dashboard tab to view Evidence overview.
         </div>
       )}
-
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Evidence"
-        footer={<><Btn onClick={() => setAddOpen(false)}>Cancel</Btn><Btn variant="primary" onClick={handleAdd}>Add</Btn></>}>
-        <form onSubmit={handleAdd}>
-          {[['Evidence Name', 'name'], ['Assignee', 'assignee'], ['Client Estimate', 'estimate']].map(([label, key]) => (
-            <div key={key} style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--gray-600)', marginBottom: 6 }}>{label}</label>
-              <input required={key === 'name'} value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: 8, fontSize: 13, outline: 'none' }} />
-            </div>
-          ))}
-        </form>
-      </Modal>
-
-      <Modal open={!!detailItem} onClose={() => setDetailItem(null)} title="Evidence Details"
-        footer={<><Btn variant="teal" onClick={() => { setEvidences(prev => prev.map(e => e.id === detailItem.id ? { ...e, status: 'uploaded' } : e)); setDetailItem(null); showToast('Evidence marked as uploaded'); }}>Mark as Uploaded</Btn><Btn onClick={() => setDetailItem(null)}>Close</Btn></>}>
-        {detailItem && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div><div style={{ fontSize: 11, fontWeight: 600, color: 'var(--gray-400)', marginBottom: 2 }}>Evidence Name</div><div style={{ fontSize: 14 }}>{detailItem.name}</div></div>
-            <div><div style={{ fontSize: 11, fontWeight: 600, color: 'var(--gray-400)', marginBottom: 4 }}>Status</div><StatusBadge status={detailItem.status} /></div>
-            <div><div style={{ fontSize: 11, fontWeight: 600, color: 'var(--gray-400)', marginBottom: 2 }}>Assignee</div><div style={{ fontSize: 14 }}>{detailItem.assignee || 'Unassigned'}</div></div>
-            <div><div style={{ fontSize: 11, fontWeight: 600, color: 'var(--gray-400)', marginBottom: 2 }}>Gaps Found</div><div style={{ fontSize: 14 }}>{detailItem.gaps}</div></div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }
